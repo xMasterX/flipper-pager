@@ -2,6 +2,7 @@
 
 #include <furi.h>
 #include <furi_hal.h>
+#include <string.h>
 #include <lib/flipper_format/flipper_format.h>
 #include "protocols/protocol_items.h"
 
@@ -32,7 +33,10 @@ POCSAGPagerApp* pocsag_pager_app_alloc() {
     // View Dispatcher
     app->view_dispatcher = view_dispatcher_alloc();
     app->scene_manager = scene_manager_alloc(&pocsag_pager_scene_handlers, app);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     view_dispatcher_enable_queue(app->view_dispatcher);
+#pragma GCC diagnostic pop
 
     view_dispatcher_set_event_callback_context(app->view_dispatcher, app);
     view_dispatcher_set_custom_event_callback(
@@ -64,6 +68,11 @@ POCSAGPagerApp* pocsag_pager_app_alloc() {
     view_dispatcher_add_view(
         app->view_dispatcher, POCSAGPagerViewWidget, widget_get_view(app->widget));
 
+    // TextInput (for transmit)
+    app->text_input = text_input_alloc();
+    view_dispatcher_add_view(
+        app->view_dispatcher, POCSAGPagerViewTextInput, text_input_get_view(app->text_input));
+
     // Receiver
     app->pcsg_receiver = pcsg_view_receiver_alloc();
     view_dispatcher_add_view(
@@ -88,7 +97,9 @@ POCSAGPagerApp* pocsag_pager_app_alloc() {
     //init Worker & Protocol & History
     app->lock = PCSGLockOff;
     app->txrx = malloc(sizeof(POCSAGPagerTxRx));
+    memset(app->txrx, 0, sizeof(POCSAGPagerTxRx));
     app->txrx->preset = malloc(sizeof(SubGhzRadioPreset));
+    memset(app->txrx->preset, 0, sizeof(SubGhzRadioPreset));
     app->txrx->preset->name = furi_string_alloc();
 
     furi_hal_power_suppress_charge_enter();
@@ -115,7 +126,22 @@ POCSAGPagerApp* pocsag_pager_app_alloc() {
 
     // custom presets loading - end
 
+    // Explicitly initialize critical state fields
+    app->txrx->rx_key_state = PCSGRxKeyStateIDLE;
+    app->txrx->txrx_state = PCSGTxRxStateIDLE;
+    app->txrx->hopper_state = PCSGHopperStateOFF;
+
     pcsg_preset_init(app, "FM95", 439987500, NULL, 0);
+
+    // TX defaults — zero all TX fields first (malloc doesn't zero memory)
+    memset(app->tx_ric_str, 0, sizeof(app->tx_ric_str));
+    memset(app->tx_msg_str, 0, sizeof(app->tx_msg_str));
+    memset(app->tx_text_buf, 0, sizeof(app->tx_text_buf));
+    strncpy(app->tx_ric_str, "1234567", sizeof(app->tx_ric_str) - 1);
+    strncpy(app->tx_msg_str, "Hello", sizeof(app->tx_msg_str) - 1);
+    app->tx_frequency = 439987500;  // DAPNET default
+    app->tx_freq_index = 0;         // matches first entry in tx_freq_values
+    app->tx_edit_field = 0;
 
     app->txrx->hopper_state = PCSGHopperStateOFF;
     app->txrx->history = pcsg_history_alloc();
@@ -157,6 +183,10 @@ void pocsag_pager_app_free(POCSAGPagerApp* app) {
     //  Widget
     view_dispatcher_remove_view(app->view_dispatcher, POCSAGPagerViewWidget);
     widget_free(app->widget);
+
+    // TextInput
+    view_dispatcher_remove_view(app->view_dispatcher, POCSAGPagerViewTextInput);
+    text_input_free(app->text_input);
 
     // Receiver
     view_dispatcher_remove_view(app->view_dispatcher, POCSAGPagerViewReceiver);
