@@ -1,6 +1,6 @@
 #include "pocsag_pager_receiver.h"
 #include "../pocsag_pager_app_i.h"
-#include "pocsag_pager_icons.h"
+#include "pocsag_pager_trx_icons.h"
 #include "../protocols/pcsg_generic.h"
 #include <input/input.h>
 #include <gui/elements.h>
@@ -52,9 +52,9 @@ void pcsg_view_receiver_info_draw(Canvas* canvas, PCSGReceiverInfoModel* model) 
         elements_text_box(
             canvas,
             0,
-            12,
+            14,
             128,
-            64,
+            50,
             AlignLeft,
             AlignTop,
             furi_string_get_cstr(model->generic->result_msg),

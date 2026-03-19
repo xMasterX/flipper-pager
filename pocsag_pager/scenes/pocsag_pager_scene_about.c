@@ -17,7 +17,8 @@ void pocsag_pager_scene_about_on_enter(void* context) {
 
     furi_string_cat_printf(temp_str, "Version: %s\n", PCSG_VERSION_APP);
     furi_string_cat_printf(temp_str, "Developed by:\n%s\n\n", PCSG_DEVELOPED);
-    furi_string_cat_printf(temp_str, "Github: %s\n\n", PCSG_GITHUB);
+    furi_string_cat_printf(temp_str, "Github: %s\n", PCSG_GITHUB);
+    furi_string_cat_printf(temp_str, "TX fork: %s\n\n", PCSG_GITHUB_TX);
 
     furi_string_cat_printf(temp_str, "\e#%s\n", "Description");
     furi_string_cat_printf(
@@ -25,7 +26,11 @@ void pocsag_pager_scene_about_on_enter(void* context) {
         "Receiving POCSAG Pager \nmessages \nDefault frequency is set to\nDAPNET - 439987500\n\nUse Config button to set frequency\nCustom frequencies usually can be found in the end of the list - use right arrow button to scroll to the end\n\nTo add new modulations and\nfrequencies create file\n/pocsag/settings.txt\nAnd copy \nsubghz/assets/setting_user.example\ncontents into new\nsettings.txt\n\n");
 
     furi_string_cat_printf(
-        temp_str, "Supported protocols:\nPOCSAG 512\nPOCSAG 1200\nPOCSAG 2400\n");
+        temp_str, "Supported protocols:\nPOCSAG 512\nPOCSAG 1200\nPOCSAG 2400\n\n");
+    furi_string_cat_printf(temp_str, "\e#%s\n", "Transmit");
+    furi_string_cat_printf(
+        temp_str,
+        "Send POCSAG messages\nto pagers and other\nreceivers.\nSet RIC, message text,\nand frequency.\nUses 2-FSK modulation\nwith inverted polarity\nfor compatibility.\n");
 
     widget_add_text_box_element(
         app->widget,

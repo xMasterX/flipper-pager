@@ -10,6 +10,7 @@
 #include <gui/modules/submenu.h>
 #include <gui/modules/variable_item_list.h>
 #include <gui/modules/widget.h>
+#include <gui/modules/text_input.h>
 #include <notification/notification_messages.h>
 #include "views/pocsag_pager_receiver.h"
 #include "views/pocsag_pager_receiver_info.h"
@@ -52,10 +53,19 @@ struct POCSAGPagerApp {
     VariableItemList* variable_item_list;
     Submenu* submenu;
     Widget* widget;
+    TextInput* text_input;
     PCSGReceiver* pcsg_receiver;
     PCSGReceiverInfo* pcsg_receiver_info;
     PCSGLock lock;
     SubGhzSetting* setting;
+
+    // Transmit state
+    char tx_ric_str[9];
+    char tx_msg_str[65];
+    char tx_text_buf[65];
+    uint32_t tx_frequency;
+    uint8_t tx_freq_index;
+    uint8_t tx_edit_field; // 0=RIC, 1=Message
 };
 
 void pcsg_preset_init(

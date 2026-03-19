@@ -179,10 +179,10 @@ static void pocsag_message_done(SubGhzProtocolDecoderPocsag* instance) {
     // append the message to the long-term storage string
     furi_string_printf(
         instance->generic.result_ric,
-        "[P%lu]\e#RIC: %" PRIu32 "\e# | ",
+        "[P%lu] \e#RIC:%" PRIu32 "\e# %s",
         instance->version,
-        instance->ric);
-    furi_string_cat_str(instance->generic.result_ric, func_msg[instance->func]);
+        instance->ric,
+        func_msg[instance->func]);
     if(instance->func != POCSAG_FUNC_ALERT1) {
         furi_string_cat(instance->done_msg, instance->msg);
     }
